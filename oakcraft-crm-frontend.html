@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oakcraft Furniture - Sales CRM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B6F47;
+            --secondary: #D2B48C;
+            --dark: #654321;
+            --light: #DEB887;
+            --accent: #CD853F;
+            --text-dark: #2C1810;
+            --text-light: #FFFFFF;
+            --background: #F5F1ED;
+            --success: #27AE60;
+            --warning: #F39C12;
+            --danger: #E74C3C;
+            --info: #3498DB;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text-dark);
+        }
+
+        /* ==================== LOGIN PAGE ==================== */
+        .login-container {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container.active {
+            display: flex;
+        }
+
+        .login-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .login-canvas {
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-form {
+            background: var(--text-light);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .login-form h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .login-form p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 111, 71, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 111, 71, 0.3);
+        }
+
+        .demo-creds {
+            background: #F0EAE0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* ==================== MAIN LAYOUT ==================== */
+        .main-layout {
+            display: none;
+            min-height: 100vh;
+            background-color: var(--background);
+        }
+
+        .main-layout.active {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            color: var(--text-light);
+            padding: 30px 0;
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            width: 280px;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.1);
+            margin: 0 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .user-info div {
+            margin-bottom: 5px;
+        }
+
+        .user-info .role {
+            color: var(--light);
+            font-weight: 600;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item a:hover {
+            background: rgba(255,255,255,0.1);
+            padding-left: 25px;
+        }
+
+        .nav-item.active a {
+            background: rgba(255,255,255,0.15);
+            border-left-color: var(--light);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 12px;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ==================== HEADER ==================== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .page-header h1 {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 111, 71, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--text-light);
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* ==================== DASHBOARD ==================== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--text-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .card.primary {
+            border-left-color: var(--primary);
+            background: linear-gradient(135deg, #fff 0%, #faf6f0 100%);
+        }
+
+        .card.success {
+            border-left-color: var(--success);
+        }
+
+        .card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .card-label {
+            color: #999;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .card-meta {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* ==================== CHARTS ==================== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: var(--text-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .chart-card h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* ==================== TABLES ==================== */
+        .table-container {
+            background: var(--text-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--background);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--light);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #EEE;
+        }
+
+        tbody tr:hover {
+            background: #f9f7f4;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.enquiry {
+            background: #E3F2FD;
+            color: var(--info);
+        }
+
+        .badge.quotation {
+            background: #FFF3E0;
+            color: var(--warning);
+        }
+
+        .badge.order {
+            background: #F3E5F5;
+            color: #9C27B0;
+        }
+
+        .badge.production {
+            background: #E0F2F1;
+            color: #009688;
+        }
+
+        .badge.qc {
+            background: #FCE4EC;
+            color: #E91E63;
+        }
+
+        .badge.dispatch {
+            background: #E8F5E9;
+            color: var(--success);
+        }
+
+        /* ==================== FORMS ==================== */
+        .form-section {
+            background: var(--text-light);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            max-width: 600px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 111, 71, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--text-light);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: #EEE;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--light);
+        }
+
+        /* ==================== PIPELINE ==================== */
+        .pipeline-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .pipeline-column {
+            background: var(--background);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 400px;
+        }
+
+        .pipeline-header {
+            background: var(--primary);
+            color: var(--text-light);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .pipeline-card {
+            background: var(--text-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .pipeline-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .pipeline-card h4 {
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .pipeline-card p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        /* ==================== STATUS BADGE ==================== */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.active {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .login-canvas {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== SEARCH & FILTERS ==================== */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* ==================== ANIMATION ==================== */
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .card {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        /* ==================== SUCCESS MESSAGE ==================== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        /* ==================== INTEGRATION BADGES ==================== */
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .integration-card {
+            background: var(--background);
+            border: 2px solid #DDD;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .integration-card:hover {
+            border-color: var(--primary);
+            background: #faf6f0;
+        }
+
+        .integration-card.connected {
+            border-color: var(--success);
+            background: #E8F5E9;
+        }
+
+        .integration-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .integration-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .integration-status {
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div class="login-container active" id="loginContainer">
+        <div class="login-wrapper">
+            <div class="login-canvas" id="loginCanvas"></div>
+            <div class="login-form">
+                <h1>Oakcraft CRM</h1>
+                <p>Advanced Sales Pipeline Management</p>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" value="admin" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" value="admin123" placeholder="Enter password">
+                </div>
+                <button class="login-btn" onclick="handleLogin()">Login</button>
+                <div class="demo-creds">
+                    <strong>Demo Credentials:</strong><br>
+                    Username: admin | Password: admin123<br>
+                    Username: sales_manager | Password: sales123
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="main-layout" id="mainLayout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2>🏢 Oakcraft</h2>
+                <p>Furniture Sales CRM</p>
+            </div>
+
+            <div class="user-info">
+                <div id="userName">Admin User</div>
+                <div class="role" id="userRole">Admin</div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="showPage('dashboard')">
+                    <a><span class="nav-icon">📊</span> Dashboard</a>
+                </li>
+                <li class="nav-item" onclick="showPage('leads')">
+                    <a><span class="nav-icon">👥</span> Leads</a>
+                </li>
+                <li class="nav-item" onclick="showPage('pipeline')">
+                    <a><span class="nav-icon">📈</span> Pipeline</a>
+                </li>
+                <li class="nav-item" onclick="showPage('employees')">
+                    <a><span class="nav-icon">👔</span> Employees</a>
+                </li>
+                <li class="nav-item" onclick="showPage('reports')">
+                    <a><span class="nav-icon">📋</span> Reports</a>
+                </li>
+                <li class="nav-item" onclick="showPage('integrations')">
+                    <a><span class="nav-icon">🔗</span> Integrations</a>
+                </li>
+                <li class="nav-item" onclick="showPage('settings')">
+                    <a><span class="nav-icon">⚙️</span> Settings</a>
+                </li>
+            </ul>
+
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- DASHBOARD PAGE -->
+            <div class="page active" id="dashboardPage">
+                <div class="page-header">
+                    <h1>📊 Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="refreshDashboard()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card primary">
+                        <div class="card-label">Total Enquiries</div>
+                        <div class="card-value" id="totalEnquiries">24</div>
+                        <div class="card-meta">↑ 3 this month</div>
+                    </div>
+                    <div class="card success">
+                        <div class="card-label">Active Orders</div>
+                        <div class="card-value" id="activeOrders">12</div>
+                        <div class="card-meta">↑ 2 this week</div>
+                    </div>
+                    <div class="card warning">
+                        <div class="card-label">In Production</div>
+                        <div class="card-value" id="inProduction">8</div>
+                        <div class="card-meta">Avg: 5 days</div>
+                    </div>
+                    <div class="card danger">
+                        <div class="card-label">Pending QC</div>
+                        <div class="card-value" id="pendingQC">3</div>
+                        <div class="card-meta">⚠️ Review needed</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Pipeline Overview</h3>
+                        <div class="chart-container">
+                            <canvas id="pipelineChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Conversion Rate</h3>
+                        <div class="chart-container">
+                            <canvas id="conversionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Monthly Revenue Trend</h3>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEADS PAGE -->
+            <div class="page" id="leadsPage">
+                <div class="page-header">
+                    <h1>👥 Leads Management</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddLeadModal()">+ Add Lead</button>
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="leadSearch" placeholder="Search by name, company, email...">
+                    <select id="leadFilter">
+                        <option value="">All Stages</option>
+                        <option value="enquiry">Enquiry</option>
+                        <option value="quotation">Quotation</option>
+                        <option value="order">Order</option>
+                        <option value="production">Production</option>
+                        <option value="qc">Quality Check</option>
+                        <option value="dispatch">Dispatch</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table id="leadsTable">
+                        <thead>
+                            <tr>
+                                <th>Lead Name</th>
+                                <th>Company</th>
+                                <th>Email</th>
+                                <th>Stage</th>
+                                <th>Amount</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PIPELINE PAGE -->
+            <div class="page" id="pipelinePage">
+                <div class="page-header">
+                    <h1>📈 Sales Pipeline</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="toggleCustomizeMode()">⚙️ Customize Stages</button>
+                    </div>
+                </div>
+
+                <div id="customizePanel" style="display: none; margin-bottom: 20px;">
+                    <div class="form-section">
+                        <h3>Pipeline Stages</h3>
+                        <div id="stagesEditor"></div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="savePipelineStages()">Save Changes</button>
+                            <button class="btn btn-secondary" onclick="toggleCustomizeMode()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-board" id="pipelineBoard">
+                </div>
+            </div>
+
+            <!-- EMPLOYEES PAGE -->
+            <div class="page" id="employeesPage">
+                <div class="page-header">
+                    <h1>👔 Employee Management</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddEmployeeModal()">+ Add Employee</button>
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="employeeSearch" placeholder="Search by name, email, role...">
+                    <select id="roleFilter">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="sales_rep">Sales Rep</option>
+                        <option value="production">Production</option>
+                        <option value="qc">QC Officer</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table id="employeesTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Role</th>
+                                <th>Reports To</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REPORTS PAGE -->
+            <div class="page" id="reportsPage">
+                <div class="page-header">
+                    <h1>📋 Reports & Analytics</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary">📥 Export</button>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Sales by Employee</h3>
+                        <div class="chart-container">
+                            <canvas id="employeeSalesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Lead Source Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="sourceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Pipeline Health</h3>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="healthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTEGRATIONS PAGE -->
+            <div class="page" id="integrationsPage">
+                <div class="page-header">
+                    <h1>🔗 Integrations</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary">View Documentation</button>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 20px; color: #666;">Connect your CRM with external platforms to automate lead generation and communications.</p>
+
+                <div class="integration-grid">
+                    <div class="integration-card" onclick="toggleIntegration('whatsapp')">
+                        <div class="integration-icon">💬</div>
+                        <div class="integration-name">WhatsApp</div>
+                        <div class="integration-status" id="whatsapp-status">Not Connected</div>
+                    </div>
+                    <div class="integration-card" onclick="toggleIntegration('indiamart')">
+                        <div class="integration-icon">🏪</div>
+                        <div class="integration-name">IndiaMART</div>
+                        <div class="integration-status" id="indiamart-status">Not Connected</div>
+                    </div>
+                    <div class="integration-card" onclick="toggleIntegration('justdial')">
+                        <div class="integration-icon">📱</div>
+                        <div class="integration-name">Justdial</div>
+                        <div class="integration-status" id="justdial-status">Not Connected</div>
+                    </div>
+                    <div class="integration-card" onclick="toggleIntegration('meta')">
+                        <div class="integration-icon">📘</div>
+                        <div class="integration-name">Meta (Facebook/Instagram)</div>
+                        <div class="integration-status" id="meta-status">Not Connected</div>
+                    </div>
+                    <div class="integration-card" onclick="toggleIntegration('google')">
+                        <div class="integration-icon">🔍</div>
+                        <div class="integration-name">Google Leads</div>
+                        <div class="integration-status" id="google-status">Not Connected</div>
+                    </div>
+                    <div class="integration-card" onclick="toggleIntegration('email')">
+                        <div class="integration-icon">📧</div>
+                        <div class="integration-name">Email Automation</div>
+                        <div class="integration-status" id="email-status">Connected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div class="page" id="settingsPage">
+                <div class="page-header">
+                    <h1>⚙️ Settings</h1>
+                </div>
+
+                <div class="form-section">
+                    <h2>Company Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" value="Oakcraft Furniture" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Industry</label>
+                            <input type="text" value="Furniture Manufacturing" disabled>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Email Configuration</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>SMTP Server</label>
+                            <input type="text" placeholder="smtp.gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Port</label>
+                            <input type="number" placeholder="587">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" placeholder="your-email@domain.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Password</label>
+                            <input type="password" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Password Generation Rules</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Company Code (Prefix)</label>
+                            <input type="text" value="Oak" placeholder="e.g., Oak">
+                        </div>
+                        <div class="form-group">
+                            <label>Password Length</label>
+                            <input type="number" value="10">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD LEAD MODAL -->
+    <div class="modal-overlay" id="addLeadModal">
+        <div class="modal">
+            <button class="close-btn" onclick="closeModal('addLeadModal')">✕</button>
+            <div class="modal-header">
+                <h2>Add New Lead</h2>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>Lead Name</label>
+                    <input type="text" id="leadName">
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input type="text" id="leadCompany">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="leadEmail">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="leadPhone">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Initial Stage</label>
+                    <select id="leadStage">
+                        <option value="enquiry">Enquiry</option>
+                        <option value="quotation">Quotation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assign To</label>
+                    <select id="leadAssignee"></select>
+                </div>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>Estimated Amount (₹)</label>
+                    <input type="number" id="leadAmount" placeholder="0">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addLead()">Add Lead</button>
+                <button class="btn btn-secondary" onclick="closeModal('addLeadModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD EMPLOYEE MODAL -->
+    <div class="modal-overlay" id="addEmployeeModal">
+        <div class="modal">
+            <button class="close-btn" onclick="closeModal('addEmployeeModal')">✕</button>
+            <div class="modal-header">
+                <h2>Add New Employee</h2>
+            </div>
+            <div class="form-row full">
+                <div class="form-group">
+                    <label>Employee Name</label>
+                    <input type="text" id="empName">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="empEmail">
+                </div>
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="empMobile">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="empRole">
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="sales_rep">Sales Rep</option>
+                        <option value="production">Production</option>
+                        <option value="qc">QC Officer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Reports To</label>
+                    <select id="empReportsTo"></select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+                <button class="btn btn-secondary" onclick="closeModal('addEmployeeModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ==================== DATA ====================
+        let currentUser = null;
+        let pipelineStages = [
+            { id: 'enquiry', name: 'Enquiry', color: '#E3F2FD' },
+            { id: 'quotation', name: 'Quotation', color: '#FFF3E0' },
+            { id: 'order', name: 'Order', color: '#F3E5F5' },
+            { id: 'production', name: 'Production', color: '#E0F2F1' },
+            { id: 'qc', name: 'Quality Check', color: '#FCE4EC' },
+            { id: 'dispatch', name: 'Dispatch', color: '#E8F5E9' }
+        ];
+
+        let users = [
+            { id: 1, username: 'admin', password: 'admin123', name: 'Admin User', email: 'admin@oakcraft.in', role: 'admin', mobile: '9999999999', reportsTo: null },
+            { id: 2, username: 'sales_manager', password: 'sales123', name: 'Rajesh Kumar', email: 'rajesh@oakcraft.in', role: 'manager', mobile: '9876543210', reportsTo: 1 },
+            { id: 3, username: 'sales_rep1', password: 'rep123', name: 'Priya Singh', email: 'priya@oakcraft.in', role: 'sales_rep', mobile: '9999888877', reportsTo: 2 },
+            { id: 4, username: 'sales_rep2', password: 'rep123', name: 'Vikram Patel', email: 'vikram@oakcraft.in', role: 'sales_rep', mobile: '9999777766', reportsTo: 2 }
+        ];
+
+        let leads = [
+            { id: 1, name: 'ABC Corporation', company: 'ABC Corp', email: 'contact@abccorp.com', phone: '9876543210', stage: 'enquiry', assignedTo: 3, amount: 50000, date: '2026-05-01' },
+            { id: 2, name: 'XYZ Industries', company: 'XYZ Ltd', email: 'info@xyz.com', phone: '9876543211', stage: 'quotation', assignedTo: 3, amount: 75000, date: '2026-04-28' },
+            { id: 3, name: 'PQR Enterprises', company: 'PQR Pvt', email: 'business@pqr.com', phone: '9876543212', stage: 'order', assignedTo: 4, amount: 120000, date: '2026-04-25' },
+            { id: 4, name: 'LMN Retailers', company: 'LMN Ltd', email: 'sales@lmn.in', phone: '9876543213', stage: 'production', assignedTo: 4, amount: 95000, date: '2026-04-20' }
+        ];
+
+        // ==================== AUTHENTICATION ====================
+        function handleLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginContainer').classList.remove('active');
+                document.getElementById('mainLayout').classList.add('active');
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userRole').textContent = user.role.replace('_', ' ').toUpperCase();
+                loadDashboard();
+                populateEmployeeSelects();
+                initializeCharts();
+            } else {
+                showNotification('Invalid credentials!', true);
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('loginContainer').classList.add('active');
+            document.getElementById('mainLayout').classList.remove('active');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // ==================== PAGE NAVIGATION ====================
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Remove active from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageName + 'Page').classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Load specific page data
+            if (pageName === 'leads') {
+                loadLeads();
+            } else if (pageName === 'pipeline') {
+                loadPipeline();
+            } else if (pageName === 'employees') {
+                loadEmployees();
+            } else if (pageName === 'reports') {
+                loadReports();
+            }
+        }
+
+        // ==================== DASHBOARD ====================
+        function loadDashboard() {
+            document.getElementById('totalEnquiries').textContent = leads.filter(l => l.stage === 'enquiry').length + leads.filter(l => l.stage === 'quotation').length;
+            document.getElementById('activeOrders').textContent = leads.filter(l => l.stage === 'order').length;
+            document.getElementById('inProduction').textContent = leads.filter(l => l.stage === 'production').length;
+            document.getElementById('pendingQC').textContent = leads.filter(l => l.stage === 'qc').length;
+        }
+
+        function refreshDashboard() {
+            loadDashboard();
+            initializeCharts();
+            showNotification('Dashboard updated!');
+        }
+
+        // ==================== CHARTS ====================
+        let chartInstances = {};
+
+        function initializeCharts() {
+            // Pipeline Chart
+            const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
+            if (chartInstances.pipeline) chartInstances.pipeline.destroy();
+            chartInstances.pipeline = new Chart(pipelineCtx, {
+                type: 'bar',
+                data: {
+                    labels: pipelineStages.map(s => s.name),
+                    datasets: [{
+                        label: 'Leads Count',
+                        data: pipelineStages.map(s => leads.filter(l => l.stage === s.id).length),
+                        backgroundColor: [
+                            '#E3F2FD', '#FFF3E0', '#F3E5F5', '#E0F2F1', '#FCE4EC', '#E8F5E9'
+                        ],
+                        borderColor: '#8B6F47',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 10 }
+                    }
+                }
+            });
+
+            // Conversion Chart
+            const conversionCtx = document.getElementById('conversionChart').getContext('2d');
+            if (chartInstances.conversion) chartInstances.conversion.destroy();
+            chartInstances.conversion = new Chart(conversionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Converted', 'In Progress', 'Not Converted'],
+                    datasets: [{
+                        data: [35, 45, 20],
+                        backgroundColor: ['#27AE60', '#F39C12', '#E74C3C'],
+                        borderColor: '#FFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            if (chartInstances.revenue) chartInstances.revenue.destroy();
+            chartInstances.revenue = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [200000, 250000, 300000, 350000, 400000],
+                        borderColor: '#8B6F47',
+                        backgroundColor: 'rgba(139, 111, 71, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+
+            // Employee Sales Chart
+            const empSalesCtx = document.getElementById('employeeSalesChart');
+            if (empSalesCtx && chartInstances.empSales) chartInstances.empSales.destroy();
+            if (empSalesCtx) {
+                const empData = {};
+                users.filter(u => u.role === 'sales_rep').forEach(u => {
+                    empData[u.name] = leads.filter(l => l.assignedTo === u.id).length;
+                });
+
+                chartInstances.empSales = new Chart(empSalesCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(empData),
+                        datasets: [{
+                            label: 'Leads Assigned',
+                            data: Object.values(empData),
+                            backgroundColor: '#8B6F47',
+                            borderColor: '#654321',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // Source Chart
+            const sourceCtx = document.getElementById('sourceChart');
+            if (sourceCtx && chartInstances.source) chartInstances.source.destroy();
+            if (sourceCtx) {
+                chartInstances.source = new Chart(sourceCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['IndiaMART', 'Justdial', 'Direct', 'Referral'],
+                        datasets: [{
+                            data: [35, 25, 30, 10],
+                            backgroundColor: ['#8B6F47', '#D2B48C', '#CD853F', '#DEB887']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Health Chart
+            const healthCtx = document.getElementById('healthChart');
+            if (healthCtx && chartInstances.health) chartInstances.health.destroy();
+            if (healthCtx) {
+                chartInstances.health = new Chart(healthCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: pipelineStages.map(s => s.name),
+                        datasets: [{
+                            label: 'Avg Days in Stage',
+                            data: [3, 5, 7, 5, 2, 1],
+                            backgroundColor: '#CD853F',
+                            borderColor: '#8B6F47',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // ==================== LEADS ====================
+        function loadLeads() {
+            const tbody = document.getElementById('leadsTableBody');
+            tbody.innerHTML = '';
+
+            leads.forEach(lead => {
+                const assignee = users.find(u => u.id === lead.assignedTo);
+                const row = `
+                    <tr>
+                        <td><strong>${lead.name}</strong></td>
+                        <td>${lead.company}</td>
+                        <td>${lead.email}</td>
+                        <td><span class="badge ${lead.stage}">${lead.stage}</span></td>
+                        <td>₹${lead.amount.toLocaleString()}</td>
+                        <td>${assignee ? assignee.name : 'Unassigned'}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editLead(${lead.id})">Edit</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function openAddLeadModal() {
+            if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
+                showNotification('Only Admin and Managers can add leads!', true);
+                return;
+            }
+            document.getElementById('addLeadModal').classList.add('active');
+        }
+
+        function addLead() {
+            const name = document.getElementById('leadName').value;
+            const company = document.getElementById('leadCompany').value;
+            const email = document.getElementById('leadEmail').value;
+            const phone = document.getElementById('leadPhone').value;
+            const stage = document.getElementById('leadStage').value;
+            const assignee = parseInt(document.getElementById('leadAssignee').value);
+            const amount = parseInt(document.getElementById('leadAmount').value);
+
+            if (!name || !company || !email) {
+                showNotification('Please fill all required fields!', true);
+                return;
+            }
+
+            const newLead = {
+                id: leads.length + 1,
+                name, company, email, phone, stage, assignedTo: assignee, amount,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            leads.push(newLead);
+            closeModal('addLeadModal');
+            loadLeads();
+            loadDashboard();
+
+            // Send assignment email
+            const user = users.find(u => u.id === assignee);
+            if (user) {
+                sendEmailNotification(user.email, `Lead Assigned: ${name}`, `You have been assigned a new lead: ${name} from ${company}`);
+            }
+
+            showNotification('Lead added successfully!');
+
+            // Clear form
+            document.getElementById('leadName').value = '';
+            document.getElementById('leadCompany').value = '';
+            document.getElementById('leadEmail').value = '';
+            document.getElementById('leadPhone').value = '';
+            document.getElementById('leadAmount').value = '';
+        }
+
+        function editLead(leadId) {
+            // Implementation for editing leads
+            showNotification('Edit functionality coming soon!');
+        }
+
+        // ==================== PIPELINE ====================
+        function loadPipeline() {
+            const board = document.getElementById('pipelineBoard');
+            board.innerHTML = '';
+
+            pipelineStages.forEach(stage => {
+                const stageLeads = leads.filter(l => l.stage === stage.id);
+                const column = document.createElement('div');
+                column.className = 'pipeline-column';
+
+                let html = `<div class="pipeline-header">${stage.name} (${stageLeads.length})</div>`;
+
+                stageLeads.forEach(lead => {
+                    html += `
+                        <div class="pipeline-card" draggable="true">
+                            <h4>${lead.name}</h4>
+                            <p><strong>${lead.company}</strong></p>
+                            <p>₹${lead.amount.toLocaleString()}</p>
+                            <p style="font-size: 11px; color: #AAA;">${lead.date}</p>
+                        </div>
+                    `;
+                });
+
+                column.innerHTML = html;
+                board.appendChild(column);
+            });
+        }
+
+        function toggleCustomizeMode() {
+            const panel = document.getElementById('customizePanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+
+            if (panel.style.display === 'block') {
+                const editor = document.getElementById('stagesEditor');
+                editor.innerHTML = '';
+                pipelineStages.forEach(stage => {
+                    editor.innerHTML += `
+                        <div class="form-row" style="margin-bottom: 15px;">
+                            <input type="text" value="${stage.name}" placeholder="Stage name" style="padding: 10px; border: 2px solid #DDD; border-radius: 8px;">
+                            <input type="color" value="${stage.color}" style="padding: 5px; border: 2px solid #DDD; border-radius: 8px; width: 80px;">
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function savePipelineStages() {
+            showNotification('Pipeline stages updated!');
+            toggleCustomizeMode();
+            loadPipeline();
+        }
+
+        // ==================== EMPLOYEES ====================
+        function loadEmployees() {
+            const tbody = document.getElementById('employeesTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const reportsTo = user.reportsTo ? users.find(u => u.id === user.reportsTo)?.name : '-';
+                const row = `
+                    <tr>
+                        <td><strong>${user.name}</strong></td>
+                        <td>${user.email}</td>
+                        <td>${user.mobile}</td>
+                        <td><span class="badge" style="background: #E3F2FD; color: #3498DB;">${user.role}</span></td>
+                        <td>${reportsTo}</td>
+                        <td><span class="status-indicator active"></span> Active</td>
+                        <td>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeEmployee(${user.id})">Remove</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function openAddEmployeeModal() {
+            if (currentUser.role !== 'admin') {
+                showNotification('Only Admin can add employees!', true);
+                return;
+            }
+            document.getElementById('addEmployeeModal').classList.add('active');
+        }
+
+        function populateEmployeeSelects() {
+            const assigneeSelect = document.getElementById('leadAssignee');
+            const reportsToSelect = document.getElementById('empReportsTo');
+
+            const salesReps = users.filter(u => u.role === 'sales_rep' || u.role === 'manager' || u.role === 'admin');
+
+            assigneeSelect.innerHTML = '';
+            salesReps.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.name;
+                assigneeSelect.appendChild(option);
+            });
+
+            reportsToSelect.innerHTML = '<option value="">Select Manager</option>';
+            const managers = users.filter(u => u.role === 'manager' || u.role === 'admin');
+            managers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.name;
+                reportsToSelect.appendChild(option);
+            });
+        }
+
+        function addEmployee() {
+            const name = document.getElementById('empName').value;
+            const email = document.getElementById('empEmail').value;
+            const mobile = document.getElementById('empMobile').value;
+            const role = document.getElementById('empRole').value;
+            const reportsTo = parseInt(document.getElementById('empReportsTo').value) || null;
+
+            if (!name || !email || !mobile) {
+                showNotification('Please fill all required fields!', true);
+                return;
+            }
+
+            // Generate username and password
+            const username = generateUsername(name);
+            const password = generatePassword(name);
+
+            const newUser = {
+                id: users.length + 1,
+                username,
+                password,
+                name,
+                email,
+                role,
+                mobile,
+                reportsTo
+            };
+
+            users.push(newUser);
+            closeModal('addEmployeeModal');
+            loadEmployees();
+            populateEmployeeSelects();
+
+            // Send email with credentials
+            sendEmailNotification(
+                email,
+                'Welcome to Oakcraft CRM',
+                `Your account has been created.\n\nUsername: ${username}\nPassword: ${password}\n\nPlease login and change your password.`
+            );
+
+            showNotification('Employee added successfully! Credentials sent to email.');
+
+            // Clear form
+            document.getElementById('empName').value = '';
+            document.getElementById('empEmail').value = '';
+            document.getElementById('empMobile').value = '';
+        }
+
+        function generateUsername(fullName) {
+            const parts = fullName.toLowerCase().split(' ');
+            return parts[0][0] + parts[parts.length - 1];
+        }
+
+        function generatePassword(fullName) {
+            const parts = fullName.split(' ');
+            const initials = parts[0].charAt(0) + parts[parts.length - 1];
+            const uniqueNum = Math.floor(Math.random() * 9000) + 1000;
+            return 'Oak' + initials.toUpperCase() + '@' + uniqueNum;
+        }
+
+        function removeEmployee(userId) {
+            if (confirm('Are you sure you want to remove this employee?')) {
+                const index = users.findIndex(u => u.id === userId);
+                if (index > -1) {
+                    users.splice(index, 1);
+                    loadEmployees();
+                    showNotification('Employee removed successfully!');
+                }
+            }
+        }
+
+        // ==================== INTEGRATIONS ====================
+        function toggleIntegration(platform) {
+            const status = document.getElementById(platform + '-status');
+            if (status.textContent === 'Not Connected') {
+                status.textContent = 'Connected';
+                status.parentElement.parentElement.classList.add('connected');
+                showNotification(`${platform.charAt(0).toUpperCase() + platform.slice(1)} integration activated!`);
+            } else {
+                status.textContent = 'Not Connected';
+                status.parentElement.parentElement.classList.remove('connected');
+                showNotification(`${platform.charAt(0).toUpperCase() + platform.slice(1)} integration deactivated!`);
+            }
+        }
+
+        // ==================== REPORTS ====================
+        function loadReports() {
+            initializeCharts();
+        }
+
+        // ==================== UTILITIES ====================
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            if (isError) notification.classList.add('error');
+
+            setTimeout(() => {
+                notification.classList.remove('show', 'error');
+            }, 3000);
+        }
+
+        function sendEmailNotification(email, subject, message) {
+            console.log(`📧 Email sent to ${email}\nSubject: ${subject}\nMessage: ${message}`);
+            // This would be implemented on the backend
+        }
+
+        function saveSettings() {
+            showNotification('Settings saved successfully!');
+        }
+
+        // ==================== 3D ANIMATION (Login Page) ====================
+        function initLogin3D() {
+            const canvas = document.getElementById('loginCanvas');
+            if (!canvas) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            canvas.appendChild(renderer.domElement);
+
+            // Create a cube
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshPhongMaterial({ color: 0xCD853F });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            camera.position.z = 2;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            initLogin3D();
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
